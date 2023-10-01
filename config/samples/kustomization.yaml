@@ -1,0 +1,5 @@
+## Append samples of your project ##
+resources:
+- infrastructure_v1alpha1_dockercluster.yaml
+- infrastructure_v1alpha1_dockermachine.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
