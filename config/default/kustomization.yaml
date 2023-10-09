@@ -8,12 +8,16 @@ namespace: capdex-system
 # field above.
 namePrefix: capdex-
 
+commonLabels:
+  cluster.x-k8s.io/provider: "infrastructure-capdex"
+
 # Labels to add to all resources and selectors.
-labels:
-- includeSelectors: true
-- cluster.x-k8s.io/provider: infrastructure-capdex
+# labels:
+# - includeSelectors: true
 #  pairs:
 #    someName: someValue
+
+
 
 resources:
 - ../crd

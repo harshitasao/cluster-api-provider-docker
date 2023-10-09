@@ -2,7 +2,7 @@
     {
       "name": "docker-example",
       "config": {
-        "image": "ghcr.io/capi-samples/cluster-api-provider-docker-example:dev",
+        "image": "ghcr.io/capi-samples/cluster-api-provider-docker:dev",
         "live_reload_deps": [
           "main.go",
           "go.mod",
@@ -11,7 +11,7 @@
           "controllers",
           "pkg"
         ],
-        "label": "CAPDKC"
+        "label": "CAPDEX"
       }
     }
 ]
