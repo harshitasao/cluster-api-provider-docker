@@ -2,7 +2,7 @@
     {
       "name": "docker-example",
       "config": {
-        "image": "ghcr.io/capi-samples/cluster-api-provider-docker:dev",
+        "image": "ghcr.io/capi-samples/cluster-api-provider-docker-example:dev",
         "live_reload_deps": [
           "main.go",
           "go.mod",
