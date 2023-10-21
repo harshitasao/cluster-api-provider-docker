@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -29,13 +30,21 @@ type DockerClusterSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of DockerCluster. Edit dockercluster_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	ControlPlaneEndpoint clusterv1.APIEndpoint `json:"controlPlaneEndpoint"`
+	LoadBalancerImage    string                `json:"loadbalancerImage,omitempty"`
 }
+
+const (
+	// ClusterFinalizer allows cleaning up resources associated with
+	// DockerCluster before removing it from the apiserver.
+	ClusterFinalizer = "dockercluster.infrastructure.cluster.x-k8s.io"
+)
 
 // DockerClusterStatus defines the observed state of DockerCluster
 type DockerClusterStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Ready bool `json:"ready"`
 }
 
 //+kubebuilder:object:root=true
