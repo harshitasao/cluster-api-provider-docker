@@ -34,13 +34,36 @@ spec:
           spec:
             description: DockerMachineSpec defines the desired state of DockerMachine
             properties:
-              foo:
-                description: Foo is an example field of DockerMachine. Edit dockermachine_types.go
-                  to remove/update
+              providerID:
+                description: ProviderID is the identifier for the DockerMachine instance
                 type: string
             type: object
           status:
             description: DockerMachineStatus defines the observed state of DockerMachine
+            properties:
+              addresses:
+                description: Addresses contains the associated addresses for the docker
+                  machine.
+                items:
+                  description: MachineAddress contains information for the node's
+                    address.
+                  properties:
+                    address:
+                      description: The machine address.
+                      type: string
+                    type:
+                      description: Machine address type, one of Hostname, ExternalIP,
+                        InternalIP, ExternalDNS or InternalDNS.
+                      type: string
+                  required:
+                  - address
+                  - type
+                  type: object
+                type: array
+              ready:
+                description: Ready indicates the docker infrastructure has been provisioned
+                  and is ready
+                type: boolean
             type: object
         type: object
     served: true

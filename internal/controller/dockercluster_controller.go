@@ -36,6 +36,11 @@ import (
 
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"sigs.k8s.io/cluster-api/util/predicates"
 )
 
 // DockerClusterReconciler reconciles a DockerCluster object
@@ -121,6 +126,23 @@ func (r *DockerClusterReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 }
 
+// SetupWithManager sets up the controller with the Manager.
+func (r *DockerClusterReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
+    c, err := ctrl.NewControllerManagedBy(mgr).
+        For(&infrav1.DockerCluster{}).
+        //WithOptions(options).
+        WithEventFilter(predicates.ResourceNotPaused(ctrl.LoggerFrom(ctx))).
+        Build(r)
+    if err != nil {
+        return err
+    }
+	return c.Watch(
+		&source.Kind{Type: &clusterv1.Cluster{}},
+		handler.EnqueueRequestsFromMapFunc(util.ClusterToInfrastructureMapFunc(ctx, infrav1.GroupVersion.WithKind("DockerCluster"), mgr.GetClient(), &infrav1.DockerCluster{})),
+		predicates.ClusterUnpaused(ctrl.LoggerFrom(ctx)),
+	)
+}
+
 func (r *DockerClusterReconciler) reconcileNormal(ctx context.Context, dockerCluster *infrav1.DockerCluster, externalLoadBalancer *docker.LoadBalancer) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	logger.Info("Reconciling DockerCluster")
@@ -156,12 +178,15 @@ func (r *DockerClusterReconciler) reconcileNormal(ctx context.Context, dockerClu
 }
 
 func (r *DockerClusterReconciler) reconcileDelete(ctx context.Context, dockerCluster *infrav1.DockerCluster, externalLoadBalancer *docker.LoadBalancer) (ctrl.Result, error) {
-	return ctrl.Result{}, nil
-}
+	logger := log.FromContext(ctx)
+	logger.Info("Reconciling DockerCluster deletion")
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *DockerClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&infrav1.DockerCluster{}).
-		Complete(r)
+	// Delete the docker container hosting the load balancer
+	if err := externalLoadBalancer.Delete(ctx); err != nil {
+    return ctrl.Result{}, errors.Wrap(err, "failed to delete load balancer")
+	}
+	// Cluster is deleted so remove the finalizer.
+	controllerutil.RemoveFinalizer(dockerCluster, infrav1.ClusterFinalizer)
+
+	return ctrl.Result{}, nil
 }
